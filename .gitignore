@@ -1,0 +1,19 @@
+# OS/editor noise
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+
+# Local/temp files
+*.tmp
+*.bak
+
+# Logs and archives
+*.log
+*.tar.gz
+*.zip
+
+# Keep raw backups local unless intentionally added
+README.old.md
+README.before-clean-index.md
