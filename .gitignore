@@ -17,3 +17,8 @@ Thumbs.db
 # Keep raw backups local unless intentionally added
 README.old.md
 README.before-clean-index.md
+
+# Raw historical notes kept local
+2026-06-09-ram-upgrade-minidlna-repair.md
+2026-06-09-ram-upgrade-minidlna-repair.old.md
+2026-06-14-diagnostics-minidlna-alvr.md
