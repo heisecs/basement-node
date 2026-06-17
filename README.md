@@ -173,6 +173,7 @@ Core documentation:
 * [Backup and Recovery](docs/backup-and-recovery.md)
 * [Hardware Upgrade and Validation Workflow](docs/hardware-upgrade-validation.md)
 * [Roadmap](docs/roadmap.md)
+* [Secure Remote Access and Custom Domain Email](docs/secure-remote-access-and-domain-email.md)
 
 Raw historical notes:
 
