@@ -174,6 +174,7 @@ Core documentation:
 * [Hardware Upgrade and Validation Workflow](docs/hardware-upgrade-validation.md)
 * [Roadmap](docs/roadmap.md)
 * [Secure Remote Access and Custom Domain Email](docs/secure-remote-access-and-domain-email.md)
+* [MiniDLNA Indexing Retry Automation](docs/minidlna-indexing-retry-automation.md)
 
 Raw historical notes:
 
