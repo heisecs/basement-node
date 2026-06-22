@@ -67,7 +67,7 @@ Current remote access model:
 
 * Tailscale private access
 * UFW deny-incoming by default
-* LAN access allowed from `192.168.50.0/24`
+* LAN access allowed from `private LAN subnet`
 
 Planned next step:
 

@@ -30,19 +30,19 @@ The current model is intentionally simple:
 Primary LAN:
 
 ```text
-192.168.50.0/24
+Private LAN Subnet
 ```
 
 Known LAN IP:
 
 ```text
-192.168.50.10
+Reserved LAN Address
 ```
 
 Known Tailscale IP:
 
 ```text
-100.125.249.25
+Tailscale Private Address
 ```
 
 Tailscale is currently the private management plane for the system.
@@ -63,7 +63,7 @@ Allowed access:
 
 ```text
 Anywhere on tailscale0      ALLOW IN    Anywhere
-Anywhere                    ALLOW IN    192.168.50.0/24
+Anywhere                    ALLOW IN    private LAN subnet
 Anywhere (v6) on tailscale0 ALLOW IN    Anywhere (v6)
 ```
 
@@ -82,7 +82,7 @@ Tailscale provides private network access to `basement-node`.
 Current Tailscale identity:
 
 ```text
-100.125.249.25  basement-node
+private Tailscale address  basement-node
 ```
 
 Operational role:
@@ -119,7 +119,7 @@ Current strengths:
 * UFW is active
 * Default incoming traffic is denied
 * Tailscale is available for private access
-* LAN access is explicitly scoped to `192.168.50.0/24`
+* LAN access is explicitly scoped to `private LAN subnet`
 * Services are not being intentionally exposed directly to the public internet
 * Private bulk storage was unmounted during documentation/review preparation to reduce accidental data exposure
 
@@ -169,7 +169,7 @@ If a service is not reachable from the LAN:
 
 1. Confirm the service container is running.
 2. Confirm the expected port is published.
-3. Confirm UFW allows LAN traffic from `192.168.50.0/24`.
+3. Confirm UFW allows LAN traffic from `private LAN subnet`.
 4. Confirm the client is actually on the trusted LAN.
 5. Confirm the service itself is listening correctly.
 

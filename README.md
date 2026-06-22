@@ -37,9 +37,6 @@ Current high-level baseline:
 * Root storage: NVMe
 * Docker version: 29.5.1
 * Docker Compose version: v5.1.3
-* Primary LAN: `192.168.50.0/24`
-* Known LAN IP: `192.168.50.10`
-* Known Tailscale IP: `100.125.249.25`
 
 For the full baseline, see:
 
@@ -71,7 +68,7 @@ For details, see:
 
 The current access model uses:
 
-* Trusted LAN access from `192.168.50.0/24`
+* Trusted LAN access from `private LAN subnet`
 * Private remote access through Tailscale
 * UFW firewall policy
 * Default deny for incoming traffic outside allowed paths
@@ -174,14 +171,6 @@ Core documentation:
 * [Hardware Upgrade and Validation Workflow](docs/hardware-upgrade-validation.md)
 * [Roadmap](docs/roadmap.md)
 * [Secure Remote Access and Custom Domain Email](docs/secure-remote-access-and-domain-email.md)
-* [MiniDLNA Indexing Retry Automation](docs/minidlna-indexing-retry-automation.md)
-
-Raw historical notes:
-
-* [2026-06-09 RAM upgrade and MiniDLNA repair](2026-06-09-ram-upgrade-minidlna-repair.md)
-* [2026-06-14 diagnostics note](2026-06-14-diagnostics-minidlna-alvr.md)
-
-The raw historical notes may include older troubleshooting context or personal-use services. The cleaned documentation under `docs/` is the main infrastructure documentation set.
 
 ## Operating Principles
 

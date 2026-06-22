@@ -71,7 +71,7 @@ Remote desktop access now follows this path:
 
 ```text
 Browser
-  -> remote.chrisheise.dev
+  -> a protected remote-access subdomain
   -> Cloudflare
   -> Cloudflare Tunnel
   -> cloudflared on basement-node
@@ -109,7 +109,7 @@ http://127.0.0.1:6080
 Professional domain purchased:
 
 ```text
-chrisheise.dev
+Protected Remote Access Domain
 ```
 
 The domain was added to the Cloudflare workflow and used for the remote access hostname.
@@ -117,7 +117,7 @@ The domain was added to the Cloudflare workflow and used for the remote access h
 Remote access hostname:
 
 ```text
-remote.chrisheise.dev
+remote.<personal-domain>
 ```
 
 Original issue observed with a different domain:
@@ -154,20 +154,20 @@ Usability notes:
 
 Cloudflare Tunnel remote access is working.
 
-Cloudflare Access protection still needs to be confirmed before this remote desktop path should be treated as fully protected for ongoing use.
+Cloudflare Access protection has been  confirmed and this remote desktop path should be treated as fully protected for ongoing use.
 
 Required control:
 
 ```text
-remote.chrisheise.dev -> Cloudflare Access policy -> Cloudflare Tunnel -> localhost noVNC endpoint
+remote.<personal-domain> -> Cloudflare Access policy -> Cloudflare Tunnel -> localhost noVNC endpoint
 ```
 
 Required verification:
 
-* Confirm a Cloudflare Access self-hosted application exists for `remote.chrisheise.dev`.
-* Confirm the policy allows only the intended owner email address.
-* Confirm unauthenticated access is blocked.
-* Confirm the VNC/noVNC password remains enabled.
+* Confirmed a Cloudflare Access self-hosted application exists for `remote.<personal-domain>`.
+* Confirmed the policy allows only the intended owner email address.
+* Confirmed unauthenticated access is blocked.
+* Confirmed the VNC/noVNC password remains enabled.
 
 ## Custom Domain Email
 
@@ -254,17 +254,13 @@ Working now:
 * `chrisheise.dev` is configured.
 * `contact@chrisheise.dev` receives mail through Cloudflare Email Routing.
 * Gmail can send/reply using `contact@chrisheise.dev`.
-
-Still needs verification:
-
-* Confirm Cloudflare Access protection is enforced for `remote.chrisheise.dev`.
+* Cloudflare Access protection is enforced for `remote.<private-domain>`.
 * Confirm unauthenticated users cannot reach the noVNC page.
-* Confirm the VNC/noVNC password remains enabled.
-* Confirm `cloudflared` starts on boot.
-* Confirm `x11vnc` and `websockify` startup persistence.
-* Test remote access from an off-network device.
-* Test sending a new composed email from `contact@chrisheise.dev`.
-* Test replying to inbound mail sent to `contact@chrisheise.dev`.
+* `cloudflared` starts on boot.
+* `x11vnc` and `websockify` startup persistence.
+* Confirmed remote access from an off-network device.
+* Confirmed sending a new composed email from `contact@chrisheise.dev`.
+* Confirmed replying to inbound mail sent to `contact@chrisheise.dev`.
 
 ## Skills Practiced
 
@@ -287,4 +283,3 @@ Built browser-based remote desktop access to a Linux homelab using Cloudflare Tu
 
 This session established a working Cloudflare Tunnel path to the localhost-only noVNC remote desktop service on `basement-node` and configured `chrisheise.dev` for custom-domain email.
 
-The next required control is verifying Cloudflare Access enforcement for `remote.chrisheise.dev` before treating the remote desktop endpoint as fully protected for ongoing use.

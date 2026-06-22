@@ -120,13 +120,13 @@ blackbox-exporter   9115/tcp
 Primary LAN:
 
 ```text
-192.168.50.0/24
+Private LAN Subnet
 ```
 
 Known LAN IP:
 
 ```text
-192.168.50.10
+Reserved LAN Address
 ```
 
 Tailscale is installed and working.
@@ -134,7 +134,7 @@ Tailscale is installed and working.
 Known Tailscale IP:
 
 ```text
-100.125.249.25
+Tailscale Private Address
 ```
 
 Tailscale is used as the private management plane for remote access.
@@ -155,7 +155,7 @@ Allowed access:
 
 ```text
 Allow traffic on tailscale0
-Allow traffic from 192.168.50.0/24
+Allow traffic from private LAN subnet
 ```
 
 This provides a simple intentional access model:
