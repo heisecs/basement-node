@@ -2,207 +2,383 @@
 
 ## Purpose
 
-This document captures the current baseline state of `basement-node` as of 2026-06-16.
+This document records the current operational baseline for `basement-node`.
 
-The goal is to document the system in a way that is useful for infrastructure review: hardware, operating system, storage, Docker services, access model, firewall posture, and recovery state.
+It is intended as a concise reference for troubleshooting, maintenance planning, hardware changes, and documentation catch-up work. It should describe the currently verified state of the system, not serve as an incident log, package-maintenance history, or roadmap.
 
-## System Identity
-
-* Hostname: `basement-node`
-* Primary user: `sona`
-* Operating system: Pop!_OS 24.04 LTS
-* Kernel: Linux 6.18.7-76061807-generic
-* Architecture: x86-64
-* Chassis: desktop
-* Hardware vendor: MACHINIST
-* Hardware model: X99 PR9-H
-* Firmware version: 5.11
-
-## Hardware Baseline
-
-* Platform: MACHINIST X99 PR9-H
-* GPU: AMD Radeon RX 6600 XT
-* Memory installed: 32 GB
-* Linux-visible memory: approximately 31 GiB
-* RAM speed: 2133 MT/s
-* Root drive: NVMe
-* Root filesystem: ext4
-
-Memory was intentionally left at the default 2133 MT/s instead of enabling XMP. The priority for this system is stability and predictable operation.
-
-## Operating System Resource Snapshot
-
-Observed memory state:
-
-```text
-Mem: 31Gi total, 13Gi used, 1.4Gi free, 19Gi buff/cache, 17Gi available
-Swap: 19Gi total, 3.8Gi used, 16Gi free
-```
-
-Observed root filesystem state:
-
-```text
-Filesystem: /dev/nvme0n1p3
-Size: 907G
-Used: 160G
-Available: 702G
-Use: 19%
-Mounted on: /
-```
-
-## Storage Layout
-
-Current storage devices:
-
-```text
-nvme0n1p3  ext4  root filesystem  mounted at /
-sda2       ext4  media-primary     not mounted during this review session
-sdb2       ext4  media-secondary   mounted at /mnt/media-secondary
-```
-
-Current privacy posture:
-
-* The private bulk-storage volume labeled `media-primary` was cleanly unmounted before documentation
-* The secondary volume remains mounted at `/mnt/media-secondary`.
-* The environment is intended to focus on infrastructure services, monitoring, access control, and documentation rather than private datasets.
-
-## Docker Baseline
-
-Docker is installed and active.
-
-Observed versions:
-
-```text
-Docker version 29.5.1
-Docker Compose version v5.1.3
-```
-
-## Monitoring Stack
-
-The monitoring stack is located at:
-
-```text
-/opt/stacks/monitoring
-```
-
-Current Dockerized monitoring services:
-
-```text
-prometheus
-grafana
-blackbox-exporter
-cadvisor
-node-exporter
-```
-
-Observed state during validation:
-
-```text
-prometheus          Up 6 days
-grafana             Up 6 days
-blackbox-exporter   Up 6 days
-cadvisor            Up 6 days (healthy)
-node-exporter       Up 6 days
-```
-
-Published ports:
-
-```text
-Grafana             3000/tcp
-Prometheus          9090/tcp
-cAdvisor            8080/tcp
-node-exporter       9100/tcp
-blackbox-exporter   9115/tcp
-```
-
-## Network and Access
-
-Primary LAN:
-
-```text
-Private LAN Subnet
-```
-
-Known LAN IP:
-
-```text
-Reserved LAN Address
-```
-
-Tailscale is installed and working.
-
-Known Tailscale IP:
-
-```text
-Tailscale Private Address
-```
-
-Tailscale is used as the private management plane for remote access.
-
-## Firewall Posture
-
-UFW is enabled.
-
-Observed UFW posture:
-
-```text
-Status: active
-Logging: on (low)
-Default: deny incoming, allow outgoing, deny routed
-```
-
-Allowed access:
-
-```text
-Allow traffic on tailscale0
-Allow traffic from private LAN subnet
-```
-
-This provides a simple intentional access model:
-
-* Trusted LAN access from the local network
-* Private remote management through Tailscale
-* Default deny for unsolicited incoming traffic outside allowed paths
-
-## Backup and Recovery State
-
-Timeshift is configured in RSYNC mode.
-
-Observed state:
-
-```text
-Status: OK
-10 snapshots
-753.3 GB free
-```
-
-Important retained snapshots:
-
-```text
-2026-05-19_21-13-42  Known good after Docker Tailscale UFW setup with trimmed excludes
-2026-06-09_16-56-53  Known good after RAM upgrade to 32GB
-2026-06-16_14-45-51  pre-demo-basement-node-portfolio-prep
-```
-
-The pre-documentation snapshot was created before preparation. This supports a rollback-aware operating model.
-
-## Current Review-Safe State
-
-For documentation, troubleshooting, or technical review, the intended focus areas are:
-
-* Documentation and system architecture
-* Docker monitoring stack
-* Grafana dashboard
-* Prometheus-backed observability
-* Tailscale private access
-* UFW firewall posture
-* Timeshift backup/recovery policy
-* Roadmap toward Cloudflare Access and Nextcloud
-
-This intentionally avoids exposing private storage paths or unrelated personal-use services.
+Last verified baseline: August 2026 documentation catch-up.
 
 ## Summary
 
-`basement-node` is currently a stable self-hosted Linux infrastructure lab with Dockerized observability, private management access, firewall controls, documented storage posture, and Timeshift-based recovery points.
+`basement-node` is a Linux server/workstation running Pop!_OS 24.04 LTS with KDE Plasma on X11.
 
-It provides a practical environment for building skills in host administration, service ownership, monitoring, secure access, change validation, and infrastructure documentation.
+Current baseline:
+
+- CPU: Intel i7-6950X, 10 cores / 20 threads
+- Motherboard: MACHINIST X99 PR9-H
+- RAM: 64 GB DDR4 using 4x16 GB SK hynix ECC-capable DIMMs
+- ECC status: ECC-capable memory installed, but ECC is not active on the current motherboard/platform
+- GPU: XFX Radeon RX 6600 XT 8 GB
+- Kernel: `6.18.7-76061807-generic`
+- Root storage: approximately 907 GB NVMe
+- Bulk storage: separate ext4-mounted media/application storage
+- Remote access: LAN SSH, Tailscale SSH, SFTP, Moonlight/Sunshine, and Cloudflare Access/Tunnel with noVNC/x11vnc
+- Monitoring: Docker-based Prometheus/Grafana stack
+- Rollback: Timeshift local snapshots
+
+Planned PSU, GPU, and motherboard upgrades have not yet been installed.
+
+## System Baseline
+
+Host:
+
+```text
+basement-node
+```
+
+Operating system:
+
+```text
+Pop!_OS 24.04 LTS
+```
+
+Desktop/session baseline:
+
+```text
+KDE Plasma on X11
+```
+
+Shell preference:
+
+```text
+fish
+```
+
+Kernel:
+
+```text
+6.18.7-76061807-generic
+```
+
+## Hardware Baseline
+
+### CPU
+
+```text
+Intel i7-6950X
+10 cores / 20 threads
+```
+
+### Motherboard
+
+```text
+MACHINIST X99 PR9-H
+```
+
+Current platform notes:
+
+- LGA2011-3 / X99-era platform
+- Limited PCIe expansion flexibility compared with desired future platform
+- ECC functionality is not active on this board/platform
+- Current board remains installed
+
+### Memory
+
+Current installed memory:
+
+```text
+64 GB DDR4
+4x16 GB SK hynix
+2Rx8
+PC4-2400T-EE1-11
+Part number: HMA82GU7AFR8N-UH
+```
+
+Operating state:
+
+```text
+RAM configured around 2133 MT/s for stability
+ECC-capable DIMMs installed
+ECC not active on current motherboard/platform
+```
+
+Validation completed:
+
+- BIOS/OS detection confirmed
+- `stress-ng` 10-minute test using approximately 32 GB passed
+- `stress-ng` 30-minute test using approximately 40 GB passed
+- `memtester` 40 GB, one full pass, passed
+- No MCE/EDAC errors observed during validation
+
+## Graphics Baseline
+
+Current installed GPU:
+
+```text
+XFX Radeon RX 6600 XT 8 GB
+```
+
+Current graphics baseline:
+
+```text
+Kernel driver: amdgpu
+OpenGL renderer: AMD Radeon RX 6600 XT
+Mesa: 25.2.8-0ubuntu0.24.04.1
+PCIe link: 16 GT/s x16
+```
+
+This is the known-good pre-upgrade graphics baseline.
+
+The planned R9700 GPU has not been installed.
+
+## Storage Baseline
+
+Root storage:
+
+```text
+~907 GB NVMe
+```
+
+Bulk/application storage:
+
+```text
+Separate ext4-mounted storage volumes
+```
+
+Current storage use includes:
+
+- OS and applications on NVMe root storage
+- Larger application/media/service data on separate ext4 storage
+- Nextcloud data currently placed on secondary bulk storage
+- Monitoring stack data managed under the Docker monitoring stack
+
+Operational boundary:
+
+```text
+Timeshift provides local system rollback.
+Timeshift is not an independent data backup solution.
+```
+
+## Remote Access Baseline
+
+Current administrative access methods:
+
+```text
+LAN SSH
+Tailscale SSH
+SFTP through SSH
+Moonlight/Sunshine
+Cloudflare Access/Tunnel with noVNC/x11vnc
+```
+
+Cloudflare/noVNC access path:
+
+```text
+Cloudflare Access/Tunnel
+→ noVNC/websockify
+→ x11vnc
+→ KDE/X11 desktop
+```
+
+Current verified state:
+
+- Browser-based desktop access through Cloudflare Access/Tunnel works
+- Phone SSH over Tailscale has been validated as an emergency administrative path
+- LAN SSH remains available and preferred while on the home network
+- SFTP through SSH has been tested for phone-to-server file transfer
+- `cloudflared` runs as a systemd service
+
+Known implementation debt:
+
+- noVNC currently uses a self-referential symlink workaround
+- Cloudflare tunnel token hygiene should be remediated without exposing token contents
+
+## Docker and Service Baseline
+
+Docker is installed and used for service stacks.
+
+Current notable stacks/services:
+
+```text
+Monitoring stack
+Nextcloud stack
+```
+
+Monitoring components:
+
+```text
+Prometheus
+Grafana
+node-exporter
+cAdvisor
+blackbox-exporter
+```
+
+Current monitoring exposure model:
+
+- Grafana remains intentionally reachable as the primary monitoring UI
+- Unnecessary host-published ports were removed for internal monitoring components
+- Internal monitoring health checks passed after reducing unnecessary host-published monitoring ports
+
+Nextcloud current state:
+
+- Nextcloud is deployed as a Docker Compose stack
+- Public access is routed through Cloudflare Tunnel
+- Local origin is bound to localhost
+- Phone auto-upload has been validated
+- This is not yet a complete backup or disaster-recovery architecture
+
+## Firewall and Security Posture
+
+Current security posture:
+
+- UFW is active
+- Default inbound policy is deny
+- Trusted local and remote administration paths are intentionally allowed
+- Public service exposure is handled through Cloudflare Tunnel where applicable
+- Tailscale remains available for private remote administration
+- Docker-published port exposure has been reviewed and reduced for the monitoring stack
+
+Important boundary:
+
+```text
+Docker-published ports can bypass expected UFW host filtering through Docker forwarding behavior.
+```
+
+Operational security rules for public documentation:
+
+- Do not publish Cloudflare tunnel tokens
+- Do not publish private keys
+- Do not publish passwords or database credentials
+- Do not publish raw production configuration files containing secrets
+- Do not publish unnecessary private topology or device inventory
+
+## Package Maintenance Baseline
+
+Current package-maintenance approach:
+
+```text
+Use controlled package-family updates
+Simulate upgrades before applying
+Avoid blanket upgrades
+Validate services after each package family
+Defer high-risk platform changes to deliberate maintenance windows
+```
+
+Explicitly avoided as routine maintenance:
+
+```text
+apt full-upgrade
+blanket apt upgrade
+apt autoremove
+automatic kernel upgrades
+automatic graphics-stack upgrades
+```
+
+## Deferred High-Risk Update Families
+
+The following update families remain intentionally deferred pending deliberate maintenance windows:
+
+```text
+kernel
+linux-firmware
+Mesa / graphics stack
+libdrm / libva / VA drivers
+GStreamer / media stack
+Xorg / Xwayland
+COSMIC / Mutter / desktop portal packages
+systemd / systemd-boot / udev
+NetworkManager
+System76 graphics/power/DKMS-related packages
+glibc/libc
+Samba
+```
+
+Reasons include:
+
+- Preserve the known-good RX 6600 XT graphics baseline
+- Avoid disrupting remote access and graphical-session troubleshooting
+- Avoid combining graphics, firmware, kernel, and hardware changes
+- Preserve rollback safety before high-risk system changes
+
+## Backup and Rollback Baseline
+
+Timeshift is used for local rollback snapshots.
+
+Current policy:
+
+- Create a fresh Timeshift snapshot before high-risk package families
+- Create a fresh Timeshift snapshot before major platform changes
+- Preserve a rollback path before PSU, GPU, graphics, kernel, or system-level changes
+- Validate alternate access paths where relevant
+
+Boundary:
+
+```text
+Timeshift is local rollback.
+Timeshift is not a substitute for independent data backup.
+```
+
+Nextcloud backup/restore automation remains future work.
+
+## Known Open Issues
+
+Current known open items:
+
+- Full root cause of the earlier KDE/X11 remote graphical-session incident is not conclusively proven
+- Sunshine/KWin/X11 degraded capture behavior remains under investigation
+- noVNC symlink workaround should be cleaned up
+- Cloudflare tunnel token hygiene should be remediated without exposing token contents
+- Display resolution persistence after reboot remains unresolved
+- Bluetooth instability remains under investigation; replacement adapter is planned
+- OpenSSH `/run/sshd` recovery incident still needs a dedicated factual writeup
+- Monitoring documentation may need reconciliation with the current Docker/UFW exposure model
+- Nextcloud still needs tested backup and restore procedures before it should be treated as a real backup system
+
+## Planned Changes Not Yet Installed
+
+### PSU
+
+Planned PSU:
+
+```text
+EVGA SuperNOVA 850 P6 Platinum
+Model: 220-P6-0850-X1
+```
+
+Current status:
+
+```text
+Purchased, not installed
+```
+
+### GPU
+
+Purchased GPU:
+
+```text
+Gigabyte AMD Radeon AI PRO R9700 AI TOP 32G
+32 GB VRAM
+```
+
+Current status:
+
+```text
+Purchased, not installed
+RX 6600 XT remains the active installed GPU
+```
+
+### Motherboard
+
+Preferred future motherboard:
+
+```text
+Supermicro X10SRA-F
+```
+
+Current status:
+
+```text
+Planned future migration only
+MACHINIST X99 PR9-H remains installed
+```
