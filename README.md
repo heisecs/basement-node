@@ -18,11 +18,12 @@ The current goals of this project are to build experience with:
 * Firewall policy with UFW
 * Backup and rollback planning with Timeshift
 * Hardware upgrade validation
+* Containerized GPU compute and local-AI service operation
 * Clean technical documentation
 * Secure browser-based access patterns
 * Future self-hosted cloud services
 
-Longer term, this project is intended to support growth toward infrastructure engineering, deployment and provisioning work, host configuration, platform operations, cloud infrastructure, and eventually AI/GPU infrastructure concepts.
+Longer term, this project supports growth toward infrastructure engineering, deployment and provisioning work, host configuration, platform operations, cloud infrastructure, and AI/GPU infrastructure concepts.
 
 ## Current System Snapshot
 
@@ -32,8 +33,9 @@ Current high-level baseline:
 * Operating system: Pop!_OS 24.04 LTS
 * Kernel: Linux 6.18.7-76061807-generic
 * Hardware platform: MACHINIST X99 PR9-H
-* GPU: AMD Radeon RX 6600 XT
-* Memory: 32 GB installed, approximately 31 GiB visible to Linux
+* GPU: Gigabyte AMD Radeon AI PRO R9700 AI TOP 32G
+* GPU memory: 32 GB GDDR6
+* Memory: 64 GB DDR4
 * Root storage: NVMe
 * Docker version: 29.5.1
 * Docker Compose version: v5.1.3
@@ -41,6 +43,17 @@ Current high-level baseline:
 For the full baseline, see:
 
 * [Current System Snapshot](docs/current-system-snapshot.md)
+
+## Local AI Stack
+
+The active R9700 is used through a container-first ROCm architecture. The host provides `amdgpu` and the GPU device interfaces, while ROCm development tools, AI frameworks, and llama.cpp remain containerized.
+
+The permanent llama.cpp stack is located at `/opt/stacks/llama-rocm`. Its web endpoint is bound to `127.0.0.1:8088` and is not publicly exposed.
+
+For details, see:
+
+* [Power and R9700 Upgrade Validation](docs/power-and-r9700-upgrade-validation.md)
+* [ROCm and llama.cpp Stack](docs/rocm-and-llama-cpp-stack.md)
 
 ## Core Services
 
@@ -95,6 +108,7 @@ Important retained recovery points include:
 2026-05-19_21-13-42  Known good after Docker Tailscale UFW setup with trimmed excludes
 2026-06-09_16-56-53  Known good after RAM upgrade to 32GB
 2026-06-16_14-45-51  pre-demo-basement-node-portfolio-prep
+2026-08-17_00-12-34  Known-good post-R9700 + EVGA 850 P6 install, pre-ROCm
 ```
 
 The recovery model is based on understanding the current state, making controlled changes, validating results, retaining rollback points, and documenting meaningful changes.
@@ -105,20 +119,12 @@ For details, see:
 
 ## Hardware Upgrade Validation
 
-The system was upgraded from 16 GB RAM to 32 GB RAM.
+The June 2026 RAM upgrade from 16 GB to 32 GB remains documented as a historical hardware-validation workflow. The system was subsequently expanded to 64 GB, as recorded in the current snapshot.
 
-Validation included:
-
-* BIOS detection of `32768 MB`
-* Pop!_OS reporting approximately `31GiB`
-* 10-minute `stress-ng` VM memory test
-* Test completed with `0` failures
-* RAM left at default `2133 MT/s` for stability
-* Known-good Timeshift snapshot created after validation
-
-For details, see:
+Hardware history and current upgrade records:
 
 * [Hardware Upgrade and Validation Workflow](docs/hardware-upgrade-validation.md)
+* [Power and R9700 Upgrade Validation](docs/power-and-r9700-upgrade-validation.md)
 
 ## Data Exposure and Privacy Posture
 
@@ -165,10 +171,13 @@ For details, see:
 Core documentation:
 
 * [Current System Snapshot](docs/current-system-snapshot.md)
+* [Architecture Overview](docs/architecture-overview.md)
 * [Observability](docs/observability.md)
 * [Access and Security](docs/access-and-security.md)
 * [Backup and Recovery](docs/backup-and-recovery.md)
 * [Hardware Upgrade and Validation Workflow](docs/hardware-upgrade-validation.md)
+* [Power and R9700 Upgrade Validation](docs/power-and-r9700-upgrade-validation.md)
+* [ROCm and llama.cpp Stack](docs/rocm-and-llama-cpp-stack.md)
 * [Roadmap](docs/roadmap.md)
 * [Secure Remote Access and Custom Domain Email](docs/secure-remote-access-and-domain-email.md)
 
@@ -186,6 +195,6 @@ Guiding principles for this project:
 
 ## Summary
 
-`basement-node` is a working self-hosted Linux infrastructure lab.
+`basement-node` is a working self-hosted Linux infrastructure and local-AI lab.
 
-It demonstrates Linux administration, Docker service ownership, observability, private access, firewall policy, backup/recovery discipline, hardware validation, and infrastructure documentation. It also provides a practical foundation for future work with secure access patterns, self-hosted cloud services, automation, platform operations, and eventually AI/GPU infrastructure concepts.
+It demonstrates Linux administration, Docker service ownership, observability, private access, firewall policy, backup/recovery discipline, hardware validation, containerized ROCm operation, and GPU-accelerated llama.cpp workloads.

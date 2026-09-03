@@ -6,7 +6,7 @@ This document records the current operational baseline for `basement-node`.
 
 It is intended as a concise reference for troubleshooting, maintenance planning, hardware changes, and documentation catch-up work. It should describe the currently verified state of the system, not serve as an incident log, package-maintenance history, or roadmap.
 
-Last verified baseline: August 2026 documentation catch-up.
+Last documented baseline: September 2026 documentation catch-up based on the project-history handoff. No new live-system inspection was performed for this update.
 
 ## Summary
 
@@ -18,15 +18,18 @@ Current baseline:
 - Motherboard: MACHINIST X99 PR9-H
 - RAM: 64 GB DDR4 using 4x16 GB SK hynix ECC-capable DIMMs
 - ECC status: ECC-capable memory installed, but ECC is not active on the current motherboard/platform
-- GPU: XFX Radeon RX 6600 XT 8 GB
+- GPU: Gigabyte AMD Radeon AI PRO R9700 AI TOP 32G
+- GPU memory: 32 GB GDDR6
+- PSU: EVGA SuperNOVA 850 P6 Platinum
 - Kernel: `6.18.7-76061807-generic`
 - Root storage: approximately 907 GB NVMe
 - Bulk storage: separate ext4-mounted media/application storage
 - Remote access: LAN SSH, Tailscale SSH, SFTP, Moonlight/Sunshine, and Cloudflare Access/Tunnel with noVNC/x11vnc
 - Monitoring: Docker-based Prometheus/Grafana stack
+- Local AI: Dockerized ROCm 7.2.4 and pinned llama.cpp stack
 - Rollback: Timeshift local snapshots
 
-Planned PSU, GPU, and motherboard upgrades have not yet been installed.
+The PSU and R9700 upgrades are installed. The preferred future motherboard migration remains planned.
 
 ## System Baseline
 
@@ -82,6 +85,21 @@ Current platform notes:
 - ECC functionality is not active on this board/platform
 - Current board remains installed
 
+### Power Supply
+
+Current installed PSU:
+
+```text
+EVGA SuperNOVA 850 P6 Platinum
+Model: 220-P6-0850-X1
+```
+
+Status: **CONFIRMED**
+
+The R9700 is powered by two separate original EVGA VGA/PCIe cables connected through `VGA1` and `VGA2`. PCIe power is not daisy-chained, and modular PSU cables were not mixed.
+
+The RX 6600 XT was validated after the PSU migration and before the R9700 was installed.
+
 ### Memory
 
 Current installed memory:
@@ -112,24 +130,69 @@ Validation completed:
 
 ## Graphics Baseline
 
-Current installed GPU:
+Status: **CONFIRMED**
+
+Current active GPU:
+
+```text
+Gigabyte AMD Radeon AI PRO R9700 AI TOP 32G
+32 GB GDDR6
+```
+
+Validated properties:
+
+```text
+Kernel driver: amdgpu
+GPU architecture: gfx1201
+Compute units: 64
+Reported VRAM: 32768 MB
+OpenGL: accelerated, version 4.6
+PCIe link: Gen3 x16 on the current X99 platform
+```
+
+GPU compute/render interfaces:
+
+```text
+/dev/kfd
+/dev/dri/renderD128
+```
+
+The required `video` and `render` group access is present. Docker device-access IDs on this host are:
+
+```text
+video  = 44
+render = 992
+```
+
+These numeric IDs are host-specific.
+
+### Known Non-Fatal R9700 Warnings
+
+Status: **KNOWN NON-FATAL WARNING**
+
+Observed boot/log breadcrumbs:
+
+- An SMU interface mismatch warning appears while initialization still completes.
+- Two `REG_WAIT` timeout messages involve `optc401`.
+- A MES firmware warning refers to the LR compute workaround.
+
+These observations are not documented as fixed, hardware defects, or causes of unrelated failures.
+
+### Pre-R9700 Graphics Baseline
+
+Status: **HISTORICAL STATE**
+
+Before the R9700 installation, the active GPU was:
 
 ```text
 XFX Radeon RX 6600 XT 8 GB
-```
-
-Current graphics baseline:
-
-```text
 Kernel driver: amdgpu
 OpenGL renderer: AMD Radeon RX 6600 XT
 Mesa: 25.2.8-0ubuntu0.24.04.1
 PCIe link: 16 GT/s x16
 ```
 
-This is the known-good pre-upgrade graphics baseline.
-
-The planned R9700 GPU has not been installed.
+That configuration remains useful as the documented pre-upgrade baseline.
 
 ## Storage Baseline
 
@@ -151,6 +214,13 @@ Current storage use includes:
 - Larger application/media/service data on separate ext4 storage
 - Nextcloud data currently placed on secondary bulk storage
 - Monitoring stack data managed under the Docker monitoring stack
+- AI models under `/mnt/media-secondary/ai/models`
+- AI caches under `/mnt/media-secondary/ai/cache`
+
+Current storage policy:
+
+- `/mnt/media-primary` is reserved for VR video content.
+- `/mnt/media-secondary` is the default location for AI models, caches, application data, documentation-related storage, downloads, and new persistent workloads.
 
 Operational boundary:
 
@@ -202,6 +272,7 @@ Current notable stacks/services:
 ```text
 Monitoring stack
 Nextcloud stack
+ROCm/llama.cpp local-AI stack
 ```
 
 Monitoring components:
@@ -227,6 +298,33 @@ Nextcloud current state:
 - Local origin is bound to localhost
 - Phone auto-upload has been validated
 - This is not yet a complete backup or disaster-recovery architecture
+
+### Local-AI Stack
+
+Status: **CONFIRMED**
+
+The permanent stack is located at:
+
+```text
+/opt/stacks/llama-rocm
+```
+
+The deployment uses:
+
+```text
+Image: lich-llama-rocm:7.2.4-pinned
+Models: /mnt/media-secondary/ai/models
+Cache: /mnt/media-secondary/ai/cache
+GPU devices: /dev/kfd and /dev/dri
+Docker group additions: 44 and 992
+Host endpoint: 127.0.0.1:8088
+```
+
+The endpoint is bound to localhost and is not publicly exposed.
+
+ROCm development packages and AI-framework dependencies are deliberately kept off the host. The host provides `amdgpu` and the GPU device interfaces; ROCm userspace and applications run in containers.
+
+llama.cpp runs in router mode with a models directory and `models-max=1`. Its native web UI provides current model selection.
 
 ## Firewall and Security Posture
 
@@ -296,7 +394,7 @@ Samba
 
 Reasons include:
 
-- Preserve the known-good RX 6600 XT graphics baseline
+- Preserve the validated R9700 graphics and compute baseline
 - Avoid disrupting remote access and graphical-session troubleshooting
 - Avoid combining graphics, firmware, kernel, and hardware changes
 - Preserve rollback safety before high-risk system changes
@@ -311,6 +409,15 @@ Current policy:
 - Create a fresh Timeshift snapshot before major platform changes
 - Preserve a rollback path before PSU, GPU, graphics, kernel, or system-level changes
 - Validate alternate access paths where relevant
+
+Known-good post-upgrade recovery point:
+
+```text
+2026-08-17_00-12-34
+Known-good post-R9700 + EVGA 850 P6 install, pre-ROCm
+```
+
+This snapshot separates the validated hardware-upgrade state from the later containerized ROCm deployment.
 
 Boundary:
 
@@ -335,38 +442,7 @@ Current known open items:
 - Monitoring documentation may need reconciliation with the current Docker/UFW exposure model
 - Nextcloud still needs tested backup and restore procedures before it should be treated as a real backup system
 
-## Planned Changes Not Yet Installed
-
-### PSU
-
-Planned PSU:
-
-```text
-EVGA SuperNOVA 850 P6 Platinum
-Model: 220-P6-0850-X1
-```
-
-Current status:
-
-```text
-Purchased, not installed
-```
-
-### GPU
-
-Purchased GPU:
-
-```text
-Gigabyte AMD Radeon AI PRO R9700 AI TOP 32G
-32 GB VRAM
-```
-
-Current status:
-
-```text
-Purchased, not installed
-RX 6600 XT remains the active installed GPU
-```
+## Planned Hardware Changes
 
 ### Motherboard
 
@@ -382,3 +458,5 @@ Current status:
 Planned future migration only
 MACHINIST X99 PR9-H remains installed
 ```
+
+Status: **PLANNED / BACKLOG**

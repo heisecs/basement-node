@@ -15,14 +15,15 @@ Local network                         Remote users and administrators
                       |
               basement-node
        Pop!_OS + KDE Plasma on X11
+       AMD Radeon AI PRO R9700 32 GB
                       |
-       +--------------+---------------+
-       |              |               |
-   Host services   Docker stacks   Local storage
-   SSH, Sunshine   Monitoring      NVMe system volume
-   noVNC/x11vnc    Nextcloud       ext4 bulk/data volumes
-                      |
-       exporters -> Prometheus -> Grafana
+       +--------------+----------------+----------------+
+       |              |                |                |
+   Host services   Docker stacks   Local AI          Local storage
+   SSH, Sunshine   Monitoring      ROCm userspace    NVMe system volume
+   noVNC/x11vnc    Nextcloud       llama.cpp         ext4 bulk/data volumes
+                      |                |
+       exporters -> Prometheus -> Grafana             R9700
 ```
 
 Cloudflare and Tailscale provide different access boundaries: Cloudflare fronts selected browser-accessible services through identity-aware access and outbound tunnels, while Tailscale provides a private network path for administration.
@@ -41,15 +42,19 @@ The storage design separates the operating system from larger service and applic
 - Separate ext4 volumes hold bulk application, media, and service data.
 - Nextcloud data is placed on secondary bulk storage rather than the root volume.
 - Monitoring data is managed within the Docker monitoring stack.
+- `/mnt/media-primary` is reserved for VR video content.
+- `/mnt/media-secondary` is the default location for AI models, caches, application data, documentation-related storage, downloads, and new persistent workloads.
+- The llama.cpp stack uses `/mnt/media-secondary/ai/models` and `/mnt/media-secondary/ai/cache`.
 
 Timeshift snapshots protect the local system state for rollback. They are stored locally and are not an independent backup of application data or protection against storage-device failure. In particular, Nextcloud still requires tested backup and restore procedures before it can be treated as part of a complete recovery architecture.
 
 ## Docker and Service Stacks
 
-Docker Compose organizes persistent applications into service stacks rather than installing every component directly on the host. The documented architecture has two notable stack boundaries:
+Docker Compose organizes persistent applications into service stacks rather than installing every component directly on the host. The documented architecture has three notable stack boundaries:
 
 - The Docker Compose monitoring stack runs five containers: Prometheus, Grafana, node-exporter, cAdvisor, and blackbox-exporter.
 - The Nextcloud stack provides the self-hosted cloud application and keeps its persistent data on bulk storage.
+- The `/opt/stacks/llama-rocm` stack provides containerized ROCm userspace and a pinned llama.cpp build for the R9700.
 
 The stacks remain operationally separate even though they share the host, Docker runtime, storage, access controls, and recovery considerations. Internal components should remain internally reachable where possible; only required user-facing endpoints should be published or tunneled.
 
@@ -89,6 +94,8 @@ UFW provides a default-deny inbound host policy, with trusted local and private 
 
 Docker networking is a separate boundary: published container ports can traverse Docker forwarding rules in ways that do not match expected UFW host filtering. The architecture therefore relies on minimizing published ports, keeping internal services internal, binding suitable origins to localhost, and exposing only intentional entry points.
 
+The llama.cpp endpoint is bound to `127.0.0.1:8088`. It is localhost-only and is not documented as publicly exposed.
+
 No public architecture document should contain tunnel tokens, credentials, private keys, raw production configuration, or unnecessary private topology.
 
 ## Rollback and Recovery
@@ -97,8 +104,38 @@ Timeshift provides local rollback points before high-risk host, graphics, and pl
 
 This is a system-recovery layer, not a complete data-protection strategy. Persistent Docker application data—especially Nextcloud data—needs independent, tested backup and restore coverage.
 
-## Future Local-AI Expansion
+## Container-First Local-AI Architecture
 
-The AMD Radeon AI PRO R9700 with 32 GB of VRAM is a planned expansion and is **not installed**. The RX 6600 XT remains the active GPU in the documented baseline.
+Status: **CONFIRMED**
 
-The R9700 is intended to add higher-memory GPU capacity for future local-AI and compute experimentation. No R9700-backed local-AI service stack is documented as installed or operational. Any future integration should be treated as a separate platform change with power, driver, graphical-session, remote-access, monitoring, and rollback validation.
+The active GPU is an AMD Radeon AI PRO R9700 with 32 GB of GDDR6. The local-AI design deliberately keeps ROCm development packages and AI-framework dependencies off the host:
+
+```text
+host amdgpu
+→ /dev/kfd + /dev/dri
+→ Docker
+→ ROCm userspace
+→ AI framework/application
+→ R9700
+```
+
+The permanent llama.cpp deployment is located at `/opt/stacks/llama-rocm` and uses the pinned `lich-llama-rocm:7.2.4-pinned` image.
+
+GPU access is passed through using `/dev/kfd` and `/dev/dri`. The container receives the host-specific group IDs `44` (`video`) and `992` (`render`).
+
+Models and caches remain on secondary storage:
+
+```text
+/mnt/media-secondary/ai/models
+/mnt/media-secondary/ai/cache
+```
+
+llama.cpp uses router mode with a models directory and `models-max=1`. The native llama.cpp web UI provides model selection. Older `lich-model` CLI behavior predates router mode and is not the current authority for model switching; any future CLI alignment is **PLANNED / BACKLOG**.
+
+The host endpoint is:
+
+```text
+127.0.0.1:8088
+```
+
+This endpoint is localhost-only and not publicly exposed.
