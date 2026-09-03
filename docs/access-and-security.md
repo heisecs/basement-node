@@ -8,6 +8,19 @@ The goal is to document how the system is accessed, what network paths are inten
 
 This document is intended to support future troubleshooting, review, and service expansion.
 
+## Documentation Status
+
+Status: **HISTORICAL STATE**
+
+The firewall and network baseline in this document was observed during the
+2026-06-16 system review. It should not be treated as verified live state
+without a new system check.
+
+The separate 2026-06-16 secure remote-access record documents Cloudflare
+Tunnel and Cloudflare Access as configured. That dated result supersedes the
+planning language below for that observation period, but does not prove that
+the same configuration remains active.
+
 ## Current Access Model
 
 `basement-node` currently uses two trusted access paths:
@@ -110,7 +123,19 @@ These ports are intended for trusted LAN and private-access use.
 
 They should not be treated as public internet services in their current form.
 
-Before any browser-accessible service is exposed externally, it should be placed behind an identity-aware access layer such as Cloudflare Access.
+Browser-accessible services should use an identity-aware access layer rather than direct unauthenticated exposure. A later dated deployment record documents Cloudflare Access for selected browser-based services.
+
+## Interactive Access Reliability
+
+Interactive-access reliability is tracked separately from firewall and
+identity boundaries.
+
+The current catch-up record covers Bluetooth reconnect behavior,
+`x11vnc-local.service` stability, and Fire Stick/Moonlight decoder behavior.
+Each remains **OBSERVATION PENDING** and should not be described as
+definitively resolved.
+
+See [Interactive Access Observations](interactive-access-observations.md).
 
 ## Current Security Posture
 
@@ -189,6 +214,11 @@ If a service should not be reachable:
 4. Consider restricting the service to private network paths or placing it behind an access proxy.
 
 ## Cloudflare Tunnel and Access Roadmap
+
+The following section preserves the access plan as it was written. The dated
+[Secure Remote Access and Custom Domain Email](secure-remote-access-and-domain-email.md)
+record documents that this work was subsequently completed for its observation
+period. Current live state still requires validation.
 
 A future improvement is to add Cloudflare Tunnel and Cloudflare Access for identity-aware browser access.
 

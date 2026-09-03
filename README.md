@@ -92,11 +92,16 @@ Current UFW posture:
 Default: deny incoming, allow outgoing, deny routed
 ```
 
-Tailscale is treated as the current private management plane. Future browser-based service access should use an identity-aware access layer before anything is exposed externally.
+Tailscale is documented as the private management plane. A separate dated
+record documents Cloudflare Tunnel and Cloudflare Access for selected
+browser-based access; repository documentation does not by itself verify that
+either path remains active on the live system.
 
 For details, see:
 
 * [Access and Security](docs/access-and-security.md)
+* [Secure Remote Access and Custom Domain Email](docs/secure-remote-access-and-domain-email.md)
+* [Interactive Access Observations](docs/interactive-access-observations.md)
 
 ## Backup and Recovery
 
@@ -174,6 +179,7 @@ Core documentation:
 * [Architecture Overview](docs/architecture-overview.md)
 * [Observability](docs/observability.md)
 * [Access and Security](docs/access-and-security.md)
+* [Interactive Access Observations](docs/interactive-access-observations.md)
 * [Backup and Recovery](docs/backup-and-recovery.md)
 * [Hardware Upgrade and Validation Workflow](docs/hardware-upgrade-validation.md)
 * [Power and R9700 Upgrade Validation](docs/power-and-r9700-upgrade-validation.md)
