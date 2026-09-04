@@ -73,20 +73,34 @@ Current monitoring services:
 
 At the time of the 2026-06-16 system review, all five monitoring containers were running and had been up for approximately six days.
 
+Later project history records that unnecessary host-published ports were
+removed for Prometheus, node-exporter, cAdvisor, and blackbox-exporter.
+Grafana remains intentionally reachable as the primary monitoring UI, and
+internal monitoring health checks passed after that exposure reduction. Exact
+current mappings and bindings are intentionally left to live validation.
+
 For details, see:
 
 * [Observability](docs/observability.md)
 
+Nextcloud is also documented as a deployed Docker Compose workload. Its local
+web origin is bound to localhost and its public path uses Cloudflare Tunnel.
+Phone upload has been validated, but tested backup and restore procedures
+remain future work.
+
 ## Access and Security
 
-The current access model uses:
+The documented access model includes:
 
 * Trusted LAN access from `private LAN subnet`
-* Private remote access through Tailscale
+* Private remote administration through Tailscale SSH
+* SFTP over SSH for validated file transfer
+* Cloudflare Tunnel for selected browser-facing services
+* Cloudflare Access for identity-gated browser access where documented
 * UFW firewall policy
 * Default deny for incoming traffic outside allowed paths
 
-Current UFW posture:
+UFW posture recorded during the 2026-06-16 review:
 
 ```text
 Default: deny incoming, allow outgoing, deny routed
@@ -96,6 +110,12 @@ Tailscale is documented as the private management plane. A separate dated
 record documents Cloudflare Tunnel and Cloudflare Access for selected
 browser-based access; repository documentation does not by itself verify that
 either path remains active on the live system.
+
+Docker-published ports are a separate exposure boundary: Docker forwarding and
+NAT behavior can allow published container ports to traverse paths that do not
+match expected UFW host filtering. Published ports therefore require explicit
+binding and reachability review; this is not accurately summarized as "UFW
+does not work with Docker."
 
 For details, see:
 
@@ -161,9 +181,9 @@ Near-term direction:
 * Keep documentation current and useful for troubleshooting
 * Improve Grafana dashboard organization
 * Add service-specific runbooks
-* Add Cloudflare Tunnel and Cloudflare Access for selected browser-based services
-* Start with protected Grafana access
-* Add Nextcloud as the next major self-hosted cloud service
+* Revalidate Cloudflare Tunnel and Access policy enforcement without exposing connector authentication material
+* Confirm and document Grafana's intended reachability and access controls
+* Add tested Nextcloud backup and restore procedures
 * Expand monitoring and alerting
 * Build toward more repeatable service deployment patterns
 

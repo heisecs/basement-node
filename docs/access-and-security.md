@@ -2,9 +2,12 @@
 
 ## Purpose
 
-This document describes the current access and security posture for `basement-node`.
+This document preserves the 2026-06-16 access and security baseline for
+`basement-node` and records later documented changes to that model.
 
-The goal is to document how the system is accessed, what network paths are intentionally allowed, what is blocked by default, and how future browser-based access should be protected.
+The goal is to document how the system was accessed at each recorded point,
+what network paths were intentionally allowed, what was blocked by default,
+and how browser-based access was subsequently protected.
 
 This document is intended to support future troubleshooting, review, and service expansion.
 
@@ -21,22 +24,28 @@ Tunnel and Cloudflare Access as configured. That dated result supersedes the
 planning language below for that observation period, but does not prove that
 the same configuration remains active.
 
-## Current Access Model
+## Historical Access Model
 
-`basement-node` currently uses two trusted access paths:
+During the 2026-06-16 system review, `basement-node` used two trusted access
+paths:
 
 ```text
 Local LAN access
 Tailscale private access
 ```
 
-The current model is intentionally simple:
+That model was intentionally simple:
 
 * Allow trusted local network access from the home LAN
 * Allow private remote access through Tailscale
 * Deny unsolicited incoming traffic by default
 * Avoid broad public exposure of services
 * Add stronger identity-aware access controls before exposing browser-accessible services externally
+
+This was later superseded by a broader documented model: Tailscale SSH and
+SFTP over SSH were validated for remote administration and file transfer, and
+Cloudflare Tunnel plus Cloudflare Access were deployed for selected
+browser-facing services. Those later records do not prove current live state.
 
 ## Network Baseline
 
@@ -58,7 +67,8 @@ Known Tailscale IP:
 Tailscale Private Address
 ```
 
-Tailscale is currently the private management plane for the system.
+At the time of the review, Tailscale was the private management plane for the
+system.
 
 ## Firewall Baseline
 
@@ -80,7 +90,7 @@ Anywhere                    ALLOW IN    private LAN subnet
 Anywhere (v6) on tailscale0 ALLOW IN    Anywhere (v6)
 ```
 
-This means the system currently allows:
+At the time of the review, this meant the system allowed:
 
 * Traffic over the Tailscale interface
 * Traffic from the trusted local LAN
@@ -90,9 +100,11 @@ It denies unsolicited incoming traffic by default outside those allowed paths.
 
 ## Tailscale Role
 
-Tailscale provides private network access to `basement-node`.
+Tailscale provided private network access to `basement-node` in the 2026-06-16
+baseline and remains documented as the private administrative path in the
+later catch-up record.
 
-Current Tailscale identity:
+Tailscale identity recorded during that review:
 
 ```text
 private Tailscale address  basement-node
@@ -105,11 +117,14 @@ Operational role:
 * Useful path for reaching services while away from the local LAN
 * Foundation for controlled administrative access
 
-Tailscale should be treated as the current trusted remote access layer.
+Later project history records Tailscale SSH as validated for emergency remote
+administration. SFTP over SSH was also validated. Their current live status
+still requires a new check.
 
-## Docker Service Exposure
+## Docker Service Exposure History
 
-The current monitoring stack publishes several ports on the host:
+**HISTORICAL STATE — 2026-06-16:** the monitoring stack published these ports
+on the host:
 
 ```text
 Grafana             3000/tcp
@@ -119,11 +134,22 @@ node-exporter       9100/tcp
 blackbox-exporter   9115/tcp
 ```
 
-These ports are intended for trusted LAN and private-access use.
+These ports were intended for trusted LAN and private-access use.
 
-They should not be treated as public internet services in their current form.
+They were not intended as public internet services.
 
-Browser-accessible services should use an identity-aware access layer rather than direct unauthenticated exposure. A later dated deployment record documents Cloudflare Access for selected browser-based services.
+**LATER DOCUMENTED STATE:** unnecessary host-published ports were removed for
+Prometheus, node-exporter, cAdvisor, and blackbox-exporter. Grafana remained
+intentionally reachable as the primary monitoring UI, and internal monitoring
+health checks passed after the exposure reduction. The tracked documentation
+does not establish Grafana's exact current host binding or access path, so this
+document does not infer a current port mapping.
+
+Docker-published ports form a separate exposure boundary from ordinary host
+listeners. Docker forwarding and NAT behavior can allow published container
+ports to traverse paths that do not match expected UFW host filtering. This
+does not mean that UFW "does not work with Docker"; it means every published
+port needs deliberate binding, routing, and reachability review.
 
 ## Interactive Access Reliability
 
@@ -137,23 +163,29 @@ definitively resolved.
 
 See [Interactive Access Observations](interactive-access-observations.md).
 
-## Current Security Posture
+## Security Posture History
 
-Current strengths:
+Strengths observed during the 2026-06-16 review:
 
 * UFW is active
 * Default incoming traffic is denied
 * Tailscale is available for private access
 * LAN access is explicitly scoped to `private LAN subnet`
-* Services are not being intentionally exposed directly to the public internet
+* Services were not being intentionally exposed directly to the public internet
 * Private bulk storage was unmounted during documentation/review preparation to reduce accidental data exposure
 
-Current limitations:
+Limitations observed during the 2026-06-16 review:
 
 * Some services publish ports on all host interfaces
-* Grafana and Prometheus are currently suitable for trusted/private network access, not direct public exposure
+* Grafana and Prometheus were suitable for trusted/private network access, not direct public exposure
 * Service-level authentication and reverse proxy rules should be reviewed before broader access
-* External browser access has not yet been placed behind Cloudflare Access
+* External browser access had not yet been placed behind Cloudflare Access
+
+Later documentation records Cloudflare Tunnel as deployed, Cloudflare Access
+as enforced for selected browser-facing access, and the monitoring port
+reduction described above. These later facts supersede the corresponding
+planning and exposure statements for the documented catch-up baseline, but
+none has been revalidated against the live system during this documentation catch-up.
 
 ## Review Commands
 
@@ -213,14 +245,15 @@ If a service should not be reachable:
 3. Confirm whether the service is bound to all interfaces.
 4. Consider restricting the service to private network paths or placing it behind an access proxy.
 
-## Cloudflare Tunnel and Access Roadmap
+## Historical Cloudflare Tunnel and Access Roadmap
 
 The following section preserves the access plan as it was written. The dated
 [Secure Remote Access and Custom Domain Email](secure-remote-access-and-domain-email.md)
 record documents that this work was subsequently completed for its observation
 period. Current live state still requires validation.
 
-A future improvement is to add Cloudflare Tunnel and Cloudflare Access for identity-aware browser access.
+At the time, the proposed improvement was to add Cloudflare Tunnel and
+Cloudflare Access for identity-aware browser access.
 
 The intended pattern is:
 
@@ -247,6 +280,24 @@ status.pocketwhalegaming.com  -> service status page
 
 This model avoids directly opening inbound public ports to the host.
 
+## Later Documented Access State
+
+The roadmap above was later superseded by these documented results:
+
+* Cloudflare Tunnel was deployed.
+* Cloudflare Access was deployed for selected browser-facing remote access.
+* The browser-desktop path uses Cloudflare Access/Tunnel, noVNC/websockify,
+  and x11vnc.
+* Nextcloud was deployed and made publicly reachable through Cloudflare
+  Tunnel, with its local web origin bound to localhost.
+* Tailscale SSH was validated for emergency remote administration.
+* SFTP over SSH was validated for file transfer.
+
+The exact current Cloudflare applications, policies, origins, DNS records,
+tunnel health, and Grafana route require live validation. Do not inspect or
+publish `cloudflared` service-unit contents: the deployment record indicates
+that authentication material is embedded there.
+
 ## Access Design Principles
 
 Guiding principles for this system:
@@ -263,18 +314,20 @@ Guiding principles for this system:
 
 Planned access/security improvements:
 
-* Review which Docker services need host-published ports
-* Consider binding some services only to localhost or private interfaces
-* Add Cloudflare Tunnel for selected services
-* Add Cloudflare Access authentication policies
-* Start with protected Grafana access
-* Add protected access for Nextcloud after deployment
+* Revalidate which Docker services need host-published ports
+* Keep internal-only services on Docker networks or suitable loopback/private bindings
+* Revalidate Cloudflare Tunnel and Access policy enforcement without exposing connector authentication material
+* Confirm and document Grafana's intended reachability and access-control path
 * Document service-specific access requirements
 * Add a simple access runbook
-* Review whether additional UFW rules should replace broad LAN allowance for specific services
+* Review Docker forwarding policy and whether narrower host/LAN rules are appropriate
 
 ## Summary
 
-`basement-node` currently uses a simple private-first access model: trusted LAN access, Tailscale private remote access, and UFW deny-incoming by default.
+The 2026-06-16 baseline used a simple private-first access model: trusted LAN
+access, Tailscale private remote access, and UFW deny-incoming by default.
 
-The next major security improvement is to add Cloudflare Tunnel and Cloudflare Access for identity-aware browser access to selected internal services without directly exposing the host to the public internet.
+Later documentation records Cloudflare Tunnel and Cloudflare Access for
+selected browser-facing services, validated Tailscale SSH and SFTP paths, and
+reduced host publication of internal monitoring ports. Current live state and
+Grafana's exact reachability remain validation items.

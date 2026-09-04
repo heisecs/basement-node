@@ -6,6 +6,18 @@ This document records the 2026-06-16 remote access and custom-domain email setup
 
 The work established a Cloudflare Tunnel path to a localhost-only browser remote desktop service and configured `chrisheise.dev` for professional custom-domain email through Cloudflare Email Routing and Gmail send-as.
 
+## Documentation Status
+
+Status: **HISTORICAL STATE WITH LATER CONTEXT**
+
+The setup and validation details in this document were recorded on 2026-06-16
+and updated during the June 2026 portfolio preparation. They are retained as a
+dated deployment record, not as proof of current live state. A later September
+2026 documentation catch-up, based on project-history handoff rather than a new
+live inspection, records Cloudflare Tunnel and Access as deployed for selected
+browser-facing services, including this noVNC path, and records Nextcloud as
+publicly reachable through Cloudflare Tunnel.
+
 ## Summary
 
 Completed work:
@@ -67,7 +79,7 @@ Browser path:
 
 ## Remote Access Architecture
 
-Remote desktop access now follows this path:
+Remote desktop access followed this path when validated:
 
 ```text
 Browser
@@ -152,17 +164,18 @@ Usability notes:
 
 ## Access Control Status
 
-Cloudflare Tunnel remote access is working.
+Cloudflare Tunnel remote access was working during the recorded validation.
 
-Cloudflare Access protection has been  confirmed and this remote desktop path should be treated as fully protected for ongoing use.
+Cloudflare Access protection was subsequently confirmed for this remote
+desktop path during the June 2026 documentation period.
 
-Required control:
+Recorded control:
 
 ```text
 remote.<personal-domain> -> Cloudflare Access policy -> Cloudflare Tunnel -> localhost noVNC endpoint
 ```
 
-Required verification:
+Recorded verification:
 
 * Confirmed a Cloudflare Access self-hosted application exists for `remote.<personal-domain>`.
 * Confirmed the policy allows only the intended owner email address.
@@ -214,7 +227,7 @@ Gmail -> Settings -> See all settings -> Accounts and Import -> Send mail as
 
 ## Email Model
 
-Current email model:
+Email model recorded during the June 2026 work:
 
 ```text
 Inbound mail:
@@ -243,24 +256,44 @@ Validated during the session:
 * Cloudflare Email Routing was configured.
 * Gmail send-as / reply-as was configured for `contact@chrisheise.dev`.
 
-## Current Working State
+## State Recorded During the June 2026 Work
 
-Working now:
+The combined June record documents:
 
-* `cloudflared` is installed.
-* Cloudflare tunnel connector is healthy.
-* noVNC remote desktop is reachable through Cloudflare Tunnel.
-* Browser remote desktop has been confirmed working.
-* `chrisheise.dev` is configured.
-* `contact@chrisheise.dev` receives mail through Cloudflare Email Routing.
-* Gmail can send/reply using `contact@chrisheise.dev`.
-* Cloudflare Access protection is enforced for `remote.<private-domain>`.
-* Confirm unauthenticated users cannot reach the noVNC page.
-* `cloudflared` starts on boot.
-* `x11vnc` and `websockify` startup persistence.
+* `cloudflared` was installed.
+* Cloudflare tunnel connector was healthy.
+* noVNC remote desktop was reachable through Cloudflare Tunnel.
+* Browser remote desktop was confirmed working.
+* `chrisheise.dev` was configured.
+* `contact@chrisheise.dev` received mail through Cloudflare Email Routing.
+* Gmail could send/reply using `contact@chrisheise.dev`.
+* Cloudflare Access protection was enforced for `remote.<private-domain>`.
+* Unauthenticated users were confirmed unable to reach the noVNC page.
+* `cloudflared` startup persistence was confirmed.
+* `x11vnc` and `websockify` startup persistence was confirmed.
 * Confirmed remote access from an off-network device.
 * Confirmed sending a new composed email from `contact@chrisheise.dev`.
 * Confirmed replying to inbound mail sent to `contact@chrisheise.dev`.
+
+## Later Documented Access Context
+
+The September 2026 catch-up records the following later state without a new
+live-system inspection:
+
+* Cloudflare Tunnel remains part of the documented architecture.
+* Cloudflare Access is deployed for selected browser-facing access.
+* The protected browser-desktop path continues to be documented as
+  noVNC/websockify connecting to x11vnc.
+* Nextcloud is deployed with a localhost-bound origin and public access through
+  Cloudflare Tunnel.
+* Tailscale SSH has been validated for emergency remote administration.
+* SFTP over SSH has been validated for file transfer.
+
+These statements supersede older planning language elsewhere in the
+repository, but they do not establish present tunnel health, policy contents,
+DNS state, or service reachability. Live validation should avoid reading or
+printing the `cloudflared` service-unit contents because connector
+authentication material is embedded there.
 
 ## Skills Practiced
 
@@ -281,5 +314,8 @@ Built browser-based remote desktop access to a Linux homelab using Cloudflare Tu
 
 ## Summary
 
-This session established a working Cloudflare Tunnel path to the localhost-only noVNC remote desktop service on `basement-node` and configured `chrisheise.dev` for custom-domain email.
-
+The June 2026 session established a working Cloudflare Tunnel path to the
+localhost-only noVNC remote desktop service on `basement-node` and configured
+`chrisheise.dev` for custom-domain email. Later project history records
+Cloudflare Access enforcement for the browser-desktop path and expanded tunnel
+use for Nextcloud; current live state requires separate validation.

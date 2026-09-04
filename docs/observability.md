@@ -8,6 +8,15 @@ The purpose of the stack is to provide visibility into the health and behavior o
 
 This stack also serves as a practical learning environment for infrastructure monitoring patterns using Docker, Prometheus, Grafana, and exporters.
 
+## Documentation Status
+
+The container-health and host-published port details below were observed
+during the 2026-06-16 system review. Later project history records a reduction
+in monitoring exposure: unnecessary host-published ports were removed for
+Prometheus, node-exporter, cAdvisor, and blackbox-exporter, while Grafana
+remained intentionally reachable as the primary monitoring UI. No new
+live-system inspection was performed for this update.
+
 ## Stack Location
 
 The monitoring stack is located at:
@@ -31,9 +40,9 @@ Secondary validation command:
 docker ps --format "table {{.Names}}\t{{.Ports}}\t{{.Status}}"
 ```
 
-## Current Services
+## Documented Services
 
-The stack currently includes:
+The documented stack includes:
 
 ```text
 prometheus
@@ -53,7 +62,7 @@ Grafana is the dashboard and visualization layer.
 
 It provides a browser-based view into host and service metrics. This is the main place to review system behavior visually.
 
-Service port:
+Service port recorded during the 2026-06-16 review:
 
 ```text
 3000/tcp
@@ -72,7 +81,7 @@ Prometheus is the metrics collection and query layer.
 
 It scrapes metrics from configured exporters and stores time-series data that Grafana can visualize.
 
-Service port:
+Service port recorded during the 2026-06-16 review:
 
 ```text
 9090/tcp
@@ -89,7 +98,7 @@ Common uses:
 
 node-exporter exposes Linux host metrics to Prometheus.
 
-Service port:
+Service port recorded during the 2026-06-16 review:
 
 ```text
 9100/tcp
@@ -111,7 +120,7 @@ If host-level metrics are missing from Grafana, node-exporter and Prometheus tar
 
 cAdvisor exposes container-level metrics.
 
-Service port:
+Service port recorded during the 2026-06-16 review:
 
 ```text
 8080/tcp
@@ -131,7 +140,7 @@ If container metrics are missing or stale, check whether the `cadvisor` containe
 
 blackbox-exporter supports reachability checks.
 
-Service port:
+Service port recorded during the 2026-06-16 review:
 
 ```text
 9115/tcp
@@ -169,9 +178,10 @@ node-exporter       Up 6 days
 
 This confirms that the monitoring stack was persistent and stable across multiple days of normal system use.
 
-## Published Ports
+## Historical Published Ports
 
-Current published service ports:
+**HISTORICAL STATE — 2026-06-16:** these service ports were published on the
+host:
 
 ```text
 Grafana             3000/tcp
@@ -181,9 +191,38 @@ node-exporter       9100/tcp
 blackbox-exporter   9115/tcp
 ```
 
-These ports are intended for trusted LAN and private-access use, not broad public exposure.
+These ports were intended for trusted LAN and private-access use, not broad
+public exposure.
 
-Current access should be understood together with the system’s Tailscale and UFW posture.
+This list is preserved as dated evidence and is not the current exposure
+model.
+
+## Later Exposure Reduction
+
+Later project history records the following state:
+
+* The unnecessary Prometheus host-published port was removed.
+* The unnecessary node-exporter host-published port was removed.
+* The unnecessary cAdvisor host-published port was removed.
+* The unnecessary blackbox-exporter host-published port was removed.
+* Grafana remains intentionally reachable as the primary monitoring UI.
+* Internal monitoring health checks passed after the exposure reduction.
+
+The tracked evidence does not establish exact current Compose mappings,
+bindings, or Grafana's access route. Those details require live validation and
+are intentionally not inferred here.
+
+## Docker and UFW Boundary
+
+Docker-published ports require review as their own exposure boundary. Docker
+forwarding and NAT behavior can allow published container ports to traverse
+paths that do not match expected UFW host filtering. This should not be
+shortened to "UFW does not work with Docker": UFW still governs host policy,
+while Docker publication, interface binding, forwarding policy, and upstream
+network controls together determine container reachability.
+
+The preferred monitoring design is to keep scrape-only components internal to
+the monitoring network and expose only an intentional user-facing entry point.
 
 ## Review / Troubleshooting Flow
 
@@ -242,11 +281,15 @@ Check all monitoring containers:
 docker ps --format "table {{.Names}}\t{{.Ports}}\t{{.Status}}"
 ```
 
-Confirm port `3000` is published:
+Inspect Grafana's current bindings and published-port state:
 
 ```fish
 docker ps --format "table {{.Names}}\t{{.Ports}}" | grep grafana
 ```
+
+Compare the result with the intended Grafana route. The repository records
+Grafana as intentionally reachable, but it does not prove whether the current
+path is LAN, Tailscale, localhost plus a tunnel, or another controlled route.
 
 Check whether the host firewall posture changed:
 
@@ -265,7 +308,7 @@ tailscale status
 If Grafana opens but dashboards are empty or missing data:
 
 1. Confirm Prometheus is running.
-2. Open Prometheus directly on port `9090`.
+2. Check Prometheus through an approved administrative or container-internal path.
 3. Check Prometheus target health.
 4. Confirm `node-exporter` is running for host metrics.
 5. Confirm `cadvisor` is running and healthy for container metrics.
@@ -300,11 +343,15 @@ Planned observability improvements:
 * Add a simple uptime/status page
 * Add monitoring documentation for each service
 * Add a runbook for restarting or troubleshooting the stack
-* Add Cloudflare Access before exposing browser-based dashboards outside the private network
-* Add monitoring coverage for future services such as Nextcloud
+* Confirm and document the intended Grafana access route and its controls
+* Add monitoring coverage for deployed services such as Nextcloud
 
 ## Summary
 
 The observability stack is one of the core operational components of `basement-node`.
 
 It provides visibility into host health, container behavior, service state, and future endpoint availability. It also creates a practical environment for learning monitoring workflows used in infrastructure, platform operations, cloud operations, and reliability-focused engineering.
+
+The 2026-06-16 host-published port list is retained as historical evidence.
+Later documentation records reduced exposure for the internal monitoring
+components while preserving intentional access to Grafana.
