@@ -8,6 +8,14 @@ The goal was to increase host capacity while treating the system like a persiste
 
 This was not treated as a casual desktop upgrade. It was handled as an infrastructure change with validation and recovery awareness.
 
+## Historical Context
+
+Status: **HISTORICAL STATE — June 2026**
+
+This document preserves the June 2026 RAM-upgrade milestone. Its statements that the system had 32 GB describe the validated state at that time and were correct when recorded.
+
+That memory baseline was later superseded by a 64 GB configuration. See [Current System Snapshot](current-system-snapshot.md) for the later documented baseline. The subsequent PSU and GPU milestone is recorded separately in [Power and R9700 Upgrade Validation](power-and-r9700-upgrade-validation.md); its full details are not duplicated here.
+
 ## Change Summary
 
 `basement-node` was upgraded from 16 GB RAM to 32 GB RAM.

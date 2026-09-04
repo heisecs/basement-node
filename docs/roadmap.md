@@ -8,7 +8,9 @@ The goal is to keep future work organized around infrastructure learning, operat
 
 This roadmap should help avoid drifting into unrelated troubleshooting or personal-use service work when the main goal is infrastructure growth.
 
-## Current Baseline
+This is a repository planning record, not proof of current live-system state. Completed milestones below reflect documented project history; live status requires separate validation.
+
+## Documented Baseline
 
 `basement-node` currently provides:
 
@@ -25,6 +27,25 @@ This roadmap should help avoid drifting into unrelated troubleshooting or person
 * Hardware upgrade validation documentation
 * Cleaned infrastructure documentation
 
+## Completed Milestones
+
+The following work is complete in the documented project history and is no longer future backlog:
+
+* Git repository initialization and ongoing maintenance
+* Publication of the public GitHub repository
+* Cloudflare Tunnel deployment
+* Cloudflare Access deployment for selected browser-facing services
+* noVNC/websockify/x11vnc browser desktop deployment
+* Nextcloud deployment
+* EVGA SuperNOVA 850 P6 and R9700 installation
+* ROCm 7.2.4 container, HIP, and PyTorch ROCm validation
+* llama.cpp HIP/`gfx1201` build validation
+* Creation of the permanent `/opt/stacks/llama-rocm` stack
+
+The June 2026 RAM upgrade from 16 GB to 32 GB remains a valid dated historical milestone. It was later superseded by the documented 64 GB baseline. See [Hardware Upgrade and Validation Workflow](hardware-upgrade-validation.md) and [Current System Snapshot](current-system-snapshot.md).
+
+Detailed PSU/GPU and local-AI validation belongs in [Power and R9700 Upgrade Validation](power-and-r9700-upgrade-validation.md) and [ROCm and llama.cpp Stack](rocm-and-llama-cpp-stack.md), rather than being duplicated here.
+
 ## Priority 1: Documentation Quality
 
 Current goal:
@@ -35,7 +56,7 @@ Current goal:
 Planned improvements:
 
 * Keep README current
-* Add architecture notes
+* Maintain the architecture overview as the system evolves
 * Add service-specific runbooks
 * Add change logs for meaningful infrastructure updates
 * Keep private/personal-use details out of the main infrastructure docs
@@ -61,62 +82,41 @@ Planned improvements:
 * Document what each dashboard is expected to show
 * Create a monitoring troubleshooting runbook
 
-## Priority 3: Secure Browser-Based Access
+## Priority 3: Secure Browser-Based Access Maintenance
 
 Current remote access model:
 
 * Tailscale private access
 * UFW deny-incoming by default
-* LAN access allowed from `private LAN subnet`
+* LAN SSH available for local administration
+* Cloudflare Tunnel for selected browser-facing services
+* Cloudflare Access for selected identity-gated browser access
+* noVNC/websockify/x11vnc browser desktop path
 
-Planned next step:
+Remaining work:
 
-* Add Cloudflare Tunnel and Cloudflare Access for selected browser-based services.
-
-Preferred first protected service:
-
-```text
-grafana.pocketwhalegaming.com -> Grafana on basement-node
-```
-
-Reason:
-
-* Grafana is infrastructure-aligned
-* It is useful for review and troubleshooting
-* It is safer than exposing a remote desktop/control path first
-* It provides a clean pattern for future protected services
-
-Future protected service examples:
-
-```text
-grafana.pocketwhalegaming.com -> protected Grafana access
-remote.pocketwhalegaming.com  -> protected remote operations path
-cloud.pocketwhalegaming.com   -> Nextcloud
-status.pocketwhalegaming.com  -> service status page
-```
+* Revalidate current Tunnel and Access policy enforcement without exposing connector authentication material
+* Remediate Cloudflare tunnel token hygiene
+* Clean up the noVNC symlink/workaround if it remains present
+* Continue observing x11vnc stability after the `-noxfixes` change
+* Preserve Bluetooth and Fire Stick/Moonlight findings as observations until repeated validation supports stronger conclusions
+* Write a Docker/UFW hardening runbook after the live exposure model is validated
 
 Guiding rule:
 
 Do not expose browser-based services directly to the public internet without an access-control layer.
 
-## Priority 4: Self-Hosted Cloud Service
+## Priority 4: Self-Hosted Cloud Service Recovery
 
-Planned service:
+Nextcloud is deployed as a Docker Compose workload with a localhost-bound origin and Cloudflare Tunnel access. Phone auto-upload and server-side retention after phone-side deletion have been validated.
 
-```text
-Nextcloud
-```
+Remaining work:
 
-Purpose:
+* Create a durable procedure covering Nextcloud configuration, database, and data backup
+* Automate backup and restore steps where appropriate
+* Test restoration rather than treating successful backup creation as sufficient
 
-* Build experience with self-hosted cloud-style applications
-* Practice persistent application deployment
-* Practice storage planning
-* Practice authentication and access control
-* Practice backup/recovery planning for application data
-* Practice reverse proxy / tunnel / protected access patterns
-
-Nextcloud should come after the access model is stable enough to protect it properly.
+Timeshift provides local system rollback. It is not an independent backup for Nextcloud application data or protection from storage-device failure.
 
 ## Priority 5: Operational Runbooks
 
@@ -146,6 +146,8 @@ Potential future work:
 * Add health-check scripts
 * Explore Ansible or similar configuration management tooling later
 
+Local-AI automation should remain narrow until the operating pattern stabilizes. Supported future work includes optional endpoint health checks, reconciling the older `lich-model` CLI with router mode, and documenting a model-management workflow if one becomes stable.
+
 Automation should come after the system is better documented and the desired service patterns are clearer.
 
 ## Priority 7: Platform / Cloud-Native Growth
@@ -162,6 +164,7 @@ Longer-term learning direction:
 * Kubernetes fundamentals
 * OCI/cloud infrastructure concepts
 * GPU/AI infrastructure concepts over time
+* Preferred future motherboard migration to the Supermicro X10SRA-F
 
 This direction aligns `basement-node` with infrastructure engineering, platform operations, cloud operations, and eventually AI/GPU infrastructure reliability.
 
@@ -181,17 +184,18 @@ Those topics may exist elsewhere as raw notes, but the main infrastructure docs 
 
 Immediate next steps:
 
-* Finish cleaned documentation set
-* Review README links
-* Confirm monitoring stack still runs
-* Confirm Grafana is reachable
-* Confirm Tailscale status
-* Confirm UFW posture
-* Keep private storage unmounted during review
-* Decide whether to initialize a Git repository
-* Decide whether to publish to GitHub
-* Plan Cloudflare Tunnel + Access implementation
-* Plan Nextcloud deployment after secure access pattern is stable
+* Define and automate independent backup procedures where appropriate
+* Document durable Nextcloud configuration, database, and data backup
+* Perform and record restore testing
+* Define backup expectations for local-AI models and caches
+* Remediate Cloudflare tunnel token hygiene without exposing token contents
+* Clean up the noVNC symlink/workaround if it remains present
+* Continue x11vnc `-noxfixes`, Bluetooth, and Fire Stick/Moonlight observation
+* Reconcile the older `lich-model` CLI with the current router-mode workflow
+* Add optional monitoring or health checks for the localhost-only local-AI endpoint
+* Create a Docker/UFW hardening runbook after live validation
+* Document a model-management workflow if it stabilizes
+* Plan the preferred future motherboard migration to the Supermicro X10SRA-F
 
 ## Summary
 

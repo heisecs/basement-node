@@ -21,7 +21,7 @@ The current goals of this project are to build experience with:
 * Containerized GPU compute and local-AI service operation
 * Clean technical documentation
 * Secure browser-based access patterns
-* Future self-hosted cloud services
+* Self-hosted cloud service operation and recovery planning
 
 Longer term, this project supports growth toward infrastructure engineering, deployment and provisioning work, host configuration, platform operations, cloud infrastructure, and AI/GPU infrastructure concepts.
 

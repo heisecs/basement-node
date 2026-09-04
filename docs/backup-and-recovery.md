@@ -10,6 +10,8 @@ The goal is to keep the system recoverable while making changes, upgrades, and s
 
 `basement-node` currently uses Timeshift in RSYNC mode for system snapshots.
 
+Timeshift is a local system rollback mechanism. It is not an independent data backup and does not by itself protect application data from loss of the local storage device.
+
 Timeshift is used to create restore points before or after important system changes, including:
 
 * Docker/service setup
@@ -19,6 +21,8 @@ Timeshift is used to create restore points before or after important system chan
 * Known-good system states
 
 ## Current Timeshift State
+
+Status: **HISTORICAL STATE — observed 2026-06-16**
 
 Observed Timeshift status during the 2026-06-16 system review:
 
@@ -31,21 +35,29 @@ Status : OK
 
 Timeshift is using the root NVMe filesystem as the snapshot target.
 
-## Important Recovery Points
+This dated observation is retained as historical state and does not establish the current snapshot count, free space, or live Timeshift health.
 
-Current important snapshots:
+## Documented Recovery Points
+
+Important snapshots recorded in project history, not revalidated in this documentation catch-up:
 
 ```text
 2026-05-19_21-13-42  Known good after Docker Tailscale UFW setup with trimmed excludes
 2026-06-09_16-56-53  Known good after RAM upgrade to 32GB
 2026-06-16_14-45-51  pre-demo-basement-node-portfolio-prep
+2026-08-17_00-12-34  Known-good post-R9700 + EVGA 850 P6 install, pre-ROCm
 ```
+
+The hardware change associated with the August rollback point is documented in [Power and R9700 Upgrade Validation](power-and-r9700-upgrade-validation.md).
 
 These snapshots represent useful rollback points:
 
 * A known-good service/access baseline
 * A known-good post-hardware-upgrade baseline
 * A pre-review/pre-documentation preparation baseline
+* A known-good post-R9700 and PSU baseline before the containerized ROCm work
+
+The June snapshots remain useful historical recovery milestones. The August snapshot is the later documented rollback point separating the validated EVGA 850 P6/R9700 installation from subsequent ROCm userspace and application work.
 
 ## Snapshot Strategy
 
@@ -94,7 +106,7 @@ Check mounted filesystems:
 lsblk -f
 ```
 
-## Current Storage / Privacy Note
+## Historical Storage / Privacy Note
 
 During the 2026-06-16 documentation and review preparation session, the private bulk-storage volume was cleanly unmounted.
 
@@ -142,13 +154,14 @@ Planned backup/recovery improvements:
 * Add a recovery runbook
 * Add a pre-change checklist
 * Add a post-change validation checklist
-* Consider separate backup strategy for non-system data
-* Periodically test restore assumptions
+* Create a durable independent backup procedure for Nextcloud configuration, database, and data
+* Automate backup and restore steps where appropriate
+* Perform and document restore testing
+* Define backup expectations for local-AI models and caches
 * Avoid letting automatic snapshots crowd out meaningful known-good restore points
 
 ## Summary
 
 Timeshift is part of the operating model for `basement-node`.
 
-The system currently has multiple useful restore points, including a known-good post-RAM-upgrade snapshot and a pre-review preparation snapshot. Backup and recovery are treated as active infrastructure practices, not afterthoughts.
-
+The documented history includes multiple useful local rollback points, including the June post-RAM-upgrade snapshot and the August post-R9700/PSU, pre-ROCm snapshot. These do not constitute a complete backup or disaster-recovery system: independent Nextcloud backup, restore testing, and defined local-AI model/cache backup expectations remain open work.
