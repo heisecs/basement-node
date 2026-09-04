@@ -437,9 +437,9 @@ Current known open items:
 - noVNC symlink workaround should be cleaned up
 - Cloudflare tunnel token hygiene should be remediated without exposing token contents
 - Display resolution persistence after reboot remains unresolved
-- Bluetooth instability remains under investigation; replacement adapter is planned
+- Bluetooth adapter replacement is complete; reconnect/resume behavior improved, but repeated reconnect/resume and remaining timeout behavior are still observation pending
 - OpenSSH `/run/sshd` recovery incident still needs a dedicated factual writeup
-- Monitoring documentation may need reconciliation with the current Docker/UFW exposure model
+- Current monitoring exposure, Grafana reachability, and Docker/UFW forwarding behavior still require live validation before exact current bindings or routes are documented
 - Nextcloud still needs tested backup and restore procedures before it should be treated as a real backup system
 
 ## Planned Hardware Changes
