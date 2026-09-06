@@ -197,6 +197,7 @@ Core documentation:
 
 * [Current System Snapshot](docs/current-system-snapshot.md)
 * [Architecture Overview](docs/architecture-overview.md)
+* [Endpoint and Client Devices](docs/endpoints/README.md)
 * [Observability](docs/observability.md)
 * [Access and Security](docs/access-and-security.md)
 * [Interactive Access Observations](docs/interactive-access-observations.md)
